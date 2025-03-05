@@ -4,7 +4,7 @@
 *          Prof. Veríssimo                               *
 *--------------------------------------------------------*
 * Objetivo do Programa: Variáveis Compostas Homogêneas   *
-* Data - 27/02/2023                                      * 
+* Data - 27/02/2025                                      * 
 * Autor: Gustavo Alves Pereira                           *
 *--------------------------------------------------------*/
 
