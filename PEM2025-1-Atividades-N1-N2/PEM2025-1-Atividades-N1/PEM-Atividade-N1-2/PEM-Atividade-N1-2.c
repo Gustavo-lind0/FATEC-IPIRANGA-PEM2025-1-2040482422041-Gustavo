@@ -8,78 +8,94 @@
 * Autor: Gustavo Alves Pereira                           *
 *--------------------------------------------------------*/
 
-
-
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h> // Necessário para verificar dígitos
 
-#define MAX_RUAS 3
-#define MAX_GONDOLAS 10
-#define MAX_PRODUTOS 100
+#define RUAS 3
+#define GONDOLAS 10
 
-typedef struct {
-    char cod[10];
-    char desc[50];
-} Prod;
+// Estrutura para armazenar os produtos
+struct Produto {
+    char codigo[5]; // Regra de negócio: Código deve seguir o padrão Pnnn
+    char descricao[50];
+    int ocupada; // Regra de negócio: Um produto ocupa somente 1 gôndola
+};
 
-typedef struct {
-    Prod prod;
-    int ocup;
-} Gond;
-
-typedef struct {
-    Gond gonds[MAX_GONDOLAS];
-} Rua;
-
-Rua estq[MAX_RUAS];
-
-void InicEstq() {
-    for (int i = 0; i < MAX_RUAS; i++) {
-        for (int j = 0; j < MAX_GONDOLAS; j++) {
-            estq[i].gonds[j].ocup = 0;
-        }
-    }
-}
-
-int ArmazProd(char *cod, char *desc, int rua, int gond) {
-    if (estq[rua].gonds[gond].ocup) {
-        printf("Erro: Gond ocupada!\n");
-        return 0;
-    }
-    strcpy(estq[rua].gonds[gond].prod.cod, cod);
-    strcpy(estq[rua].gonds[gond].prod.desc, desc);
-    estq[rua].gonds[gond].ocup = 1;
-    printf("Prod armazenado!\n");
-    return 1;
-}
-
-int RetiraProd(int rua, int gond) {
-    if (!estq[rua].gonds[gond].ocup) {
-        printf("Erro: Nenhum prod nesta gond!\n");
-        return 0;
-    }
-    estq[rua].gonds[gond].ocup = 0;
-    printf("Prod retirado!\n");
-    return 1;
-}
-
-void ListEstq() {
-    for (int i = 0; i < MAX_RUAS; i++) {
-        for (int j = 0; j < MAX_GONDOLAS; j++) {
-            if (estq[i].gonds[j].ocup) {
-                printf("Rua %d, Gond %d: %s - %s\n", i, j,
-                       estq[i].gonds[j].prod.cod,
-                       estq[i].gonds[j].prod.desc);
-            }
-        }
-    }
-}
+struct Produto estoque[RUAS][GONDOLAS]; // Aspecto Técnico: Implementação de Vetor Multidimensional
 
 int main() {
-    InicEstq();
-    ArmazProd("S123", "Sabonete", 0, 9);
-    ListEstq();
-    RetiraProd(0, 9);
-    ListEstq();
+    int i, j, opcao, rua, gondola;
+    
+    // Inicialização do estoque
+    for (i = 0; i < RUAS; i++) {
+        for (j = 0; j < GONDOLAS; j++) {
+            estoque[i][j].ocupada = 0;
+        }
+    }
+    
+    do {
+        printf("\n1 - Armazenar Produto\n2 - Retirar Produto\n3 - Listar Estoque\n0 - Sair\nEscolha: ");
+        scanf("%d", &opcao);
+        
+        if (opcao == 1) { // Solicitação de produto ao estoque
+            printf("Digite rua (0-%d) e gôndola (0-%d): ", RUAS-1, GONDOLAS-1);
+            scanf("%d %d", &rua, &gondola);
+            if (rua < 0 || rua >= RUAS || gondola < 0 || gondola >= GONDOLAS) { // Programação madura: verificar validade da Rua e da gôndola
+                printf("Erro: Rua ou gôndola inválida!\n");
+                continue;
+            }
+            
+            if (estoque[rua][gondola].ocupada == 1) { // Programação madura: verificar gôndola ocupada
+                printf("Erro: Gôndola ocupada!\n");
+            } else {
+                printf("Digite o código do produto (Pnnn, ex: P123): ");
+                scanf("%4s", estoque[rua][gondola].codigo);
+                
+                // Verificar se o código segue o formato Pnnn
+                if (estoque[rua][gondola].codigo[0] != 'P' || 
+                    !isdigit(estoque[rua][gondola].codigo[1]) || 
+                    !isdigit(estoque[rua][gondola].codigo[2]) || 
+                    !isdigit(estoque[rua][gondola].codigo[3]) || 
+                    strlen(estoque[rua][gondola].codigo) != 4) {
+                    printf("Erro: Código do produto deve seguir o padrão Pnnn!\n");
+                    continue;
+                }
+
+                // Ler a descrição usando fgets para permitir espaços
+                printf("Digite a descrição do produto: ");
+                getchar(); // Para consumir o caractere '\n' deixado pelo scanf anterior
+                fgets(estoque[rua][gondola].descricao, 50, stdin);
+                
+                // Remover o '\n' no final da descrição, caso exista
+                size_t len = strlen(estoque[rua][gondola].descricao);
+                if (len > 0 && estoque[rua][gondola].descricao[len - 1] == '\n') {
+                    estoque[rua][gondola].descricao[len - 1] = '\0';
+                }
+
+                estoque[rua][gondola].ocupada = 1; // Efetuação de estocagem (Chegada de produto)
+                printf("Produto armazenado!\n");
+            }
+        } else if (opcao == 2) { // Retirada de produto
+            printf("Digite rua e gôndola: ");
+            scanf("%d %d", &rua, &gondola);
+            
+            if (estoque[rua][gondola].ocupada == 0) { // Programação madura: verificar se produto existe (retirar)
+                printf("Erro: Nenhum produto nesta gôndola!\n");
+            } else {
+                estoque[rua][gondola].ocupada = 0;
+                printf("Produto retirado!\n");
+            }
+        } else if (opcao == 3) { // Listagem do estoque
+            for (i = 0; i < RUAS; i++) {
+                for (j = 0; j < GONDOLAS; j++) {
+                    if (estoque[i][j].ocupada == 1) {
+                        printf("Rua %d, Gôndola %d: %s - %s\n", i, j, estoque[i][j].codigo, estoque[i][j].descricao);
+                    }
+                }
+            }
+        }
+    } while (opcao != 0);
+    
     return 0;
 }
