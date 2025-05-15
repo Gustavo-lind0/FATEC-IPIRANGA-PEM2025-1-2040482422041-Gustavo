@@ -4,7 +4,7 @@
 *          Prof. Veríssimo                               *
 *--------------------------------------------------------*
 * Objetivo do Programa: Ordenação de dados Insertion Sort*                                    
-* Data - 26/05/2025                                      * 
+* Data - 16/05/2025                                      * 
 * Autor: Gustavo Alves Pereira                           *
 *--------------------------------------------------------*/
 
